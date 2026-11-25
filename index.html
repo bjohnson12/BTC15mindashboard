@@ -1,0 +1,569 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BTC 15m Analytical Prediction Odds & Stop Alert</title>
+<style>
+  * { box-sizing:border-box; }
+  body { margin:0; padding:14px; background:#090c14; color:#f8fafc; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif; }
+  .wrap { max-width:1200px; margin:0 auto; }
+  .banner { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px;
+            background:linear-gradient(90deg,#1e1b4b,#0f766e,#1d4ed8); padding:14px 18px; border-radius:16px; margin-bottom:12px; }
+  .banner h1 { margin:0; font-size:20px; }
+  .top-forecast { border-radius:16px; padding:14px 18px; margin-bottom:12px; border:2px solid #475569;
+                 display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:10px; }
+  .fc-green { background:linear-gradient(90deg,#064e3b,#047857); border-color:#34d399; }
+  .fc-red { background:linear-gradient(90deg,#4c0519,#be123c); border-color:#fb7185; }
+  .fc-yellow { background:linear-gradient(90deg,#451a03,#b45309); border-color:#fbbf24; }
+  .fc-title { font-size:19px; font-weight:900; letter-spacing:.02em; }
+  .fc-sub { font-size:13px; color:#f1f5f9; opacity:.95; }
+  .hero-stage { display:flex; flex-direction:column; align-items:center; justify-content:center;
+                background:radial-gradient(circle at center,#172038 0%,#0b0f1d 75%);
+                border:2px solid #263248; border-radius:20px; padding:20px 14px; margin-bottom:12px; text-align:center; }
+  .pick-circle { width:196px; height:196px; border-radius:50%; display:flex; flex-direction:column;
+                 align-items:center; justify-content:center; font-weight:900; transition:all .2s ease; }
+  .circle-green { background:radial-gradient(circle at 30% 30%,#34d399,#059669 70%); color:#022c22;
+                  border:6px solid #a7f3d0; box-shadow:0 0 42px rgba(16,185,129,.65); }
+  .circle-red { background:radial-gradient(circle at 30% 30%,#fb7185,#e11d48 70%); color:#fff1f2;
+                border:6px solid #fecdd3; box-shadow:0 0 42px rgba(244,63,94,.65); }
+  .circle-yellow { background:radial-gradient(circle at 30% 30%,#fde047,#d97706 70%); color:#451a03;
+                   border:6px solid #fef08a; box-shadow:0 0 42px rgba(245,158,11,.6); }
+  .pick-word { font-size:46px; letter-spacing:.04em; line-height:1; }
+  .pick-sub { font-size:12px; font-weight:800; margin-top:6px; max-width:162px; }
+  .metaphor-text { margin-top:12px; font-size:15px; font-weight:700; color:#fef08a; }
+  .pill { background:rgba(0,0,0,.35); padding:6px 12px; border-radius:999px; font-weight:700; font-size:13px; }
+  .row3 { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:12px; }
+  .card { background:#111827; border:2px solid #1f2937; border-radius:16px; padding:15px; }
+  .card h2 { margin:0 0 10px 0; font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:#94a3b8; }
+  .big { font-size:28px; font-weight:800; line-height:1.1; }
+  .sub { color:#cbd5e1; font-size:13px; margin-top:6px; }
+  .green-box { background:linear-gradient(135deg,#064e3b,#065f46); border-color:#10b981; }
+  .red-box { background:linear-gradient(135deg,#4c0519,#881337); border-color:#f43f5e; }
+  .yellow-box { background:linear-gradient(135deg,#451a03,#78350f); border-color:#f59e0b; }
+  .c-green { color:#34d399; } .c-red { color:#fb7185; } .c-yellow { color:#fbbf24; } .c-cyan { color:#38bdf8; } .c-purple { color:#c084fc; }
+  .kv { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:14px; }
+  .kv:last-child { border-bottom:none; }
+  .h-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .h-box { background:#0b1020; border:1px solid #263248; border-radius:12px; padding:12px; }
+  .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:800; }
+  .b-green { background:#10b981; color:#022c22; }
+  .b-red { background:#f43f5e; color:#fff1f2; }
+  .b-yellow { background:#f59e0b; color:#451a03; }
+  input, select, button { background:#090c14; color:#fff; border:1px solid #334155; border-radius:8px; padding:8px 10px; font-size:13px; }
+  button { cursor:pointer; font-weight:700; }
+  .btn-arm { background:#2563eb; border-color:#3b82f6; }
+  .btn-panic { background:#e11d48; border-color:#fb7185; }
+  .btn-lock { background:#1e293b; border-color:#64748b; margin-top:12px; }
+  .btn-locked { background:#7c3aed; border-color:#a78bfa; margin-top:12px; }
+  .table-wrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th, td { padding:7px 8px; border-bottom:1px solid #1f2937; text-align:left; white-space:nowrap; }
+  @media (max-width:900px) { .row3, .h-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner">
+    <div>
+      <h1>BTC 15-Min Analytical Odds & Stop Alert</h1>
+      <div id="topSub" style="font-size:13px; opacity:.9;">Connecting to Coinbase & Kalshi...</div>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <label style="font-size:13px; cursor:pointer;"><input type="checkbox" id="chime"> Sound Alerts</label>
+      <span class="pill" id="clockBox">Time Left: --:--</span>
+    </div>
+  </div>
+
+  <div id="topForecast" class="top-forecast fc-yellow">
+    <div>
+      <div id="endCall" class="fc-title">MODEL CALL: LOADING...</div>
+      <div id="endDetail" class="fc-sub">Checking models, momentum, volatility, and order book...</div>
+    </div>
+    <span class="pill">15m Close Forecast • Still Possible Either Way</span>
+  </div>
+
+  <div class="hero-stage">
+    <div class="sub" style="margin-bottom:10px; text-transform:uppercase; letter-spacing:.08em; font-weight:700;">Current Center Pick (Smoothed • 3-Tick Hold)</div>
+    <div id="pickCircle" class="pick-circle circle-yellow">
+      <div id="pickWord" class="pick-word">SKIP</div>
+      <div id="pickSub" class="pick-sub">Waiting...</div>
+    </div>
+    <button id="lockBtn" class="btn-lock" onclick="toggleLock()">LOCK PICK</button>
+    <div id="metaphorBar" class="metaphor-text">Reading the room...</div>
+  </div>
+
+  <div class="row3">
+    <div class="card" id="vibeCard">
+      <h2>1. Plain-English Vibe</h2>
+      <div class="big" id="vibeTitle">Loading...</div>
+      <div class="sub" id="vibePlain">Checking BTC and Kalshi...</div>
+      <div class="kv" style="margin-top:10px;"><span>Target to Beat:</span><strong id="target">--</strong></div>
+      <div class="kv"><span>BTC Spot Now:</span><strong id="spot">--</strong></div>
+      <div class="kv"><span>Above / Below Target:</span><strong id="diff">--</strong></div>
+    </div>
+
+    <div class="card">
+      <h2>2. Live Kalshi Quotes & Odds</h2>
+      <div class="kv"><span>UP (YES) Buy / Sell:</span><strong class="c-green" id="yesPair">--</strong></div>
+      <div class="kv"><span>DOWN (NO) Buy / Sell:</span><strong class="c-red" id="noPair">--</strong></div>
+      <div class="kv"><span>Crowd Odds (UP / DOWN):</span><strong class="c-cyan" id="crowdOdds">--</strong></div>
+      <div class="sub">Live public orderbook directly from Kalshi.</div>
+    </div>
+
+    <div class="card" style="border-color:#3b82f6;">
+      <h2>3. Phone Stop-Loss Alert</h2>
+      <div class="kv"><span>Tracking Side:</span>
+        <select id="sideSel" style="padding:4px 8px;">
+          <option value="YES">UP (YES)</option>
+          <option value="NO">DOWN (NO)</option>
+        </select>
+      </div>
+      <div class="kv"><span>Live Bid vs Trigger:</span><strong id="stopStatus">--</strong></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <select id="mode" style="flex:1;">
+          <option value="fixed_cents">Alert at Bid (c)</option>
+          <option value="pct_drawdown">% Drop from Entry</option>
+          <option value="trailing_cents">Trailing Drop (c)</option>
+        </select>
+        <input id="val" type="number" value="35" style="width:74px;">
+      </div>
+      <div style="display:flex; gap:8px; margin-top:8px; font-size:12px; color:#94a3b8;">
+        <label>Entry c <input id="entry" type="number" value="50" style="width:62px;"></label>
+      </div>
+      <div style="display:flex; gap:8px; margin-top:10px;">
+        <button id="armBtn" class="btn-arm" style="flex:1;" onclick="toggleArm()">ARM STOP ALERT</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:12px; border-color:#8b5cf6;">
+    <h2>4. Analytical Prediction Odds <span style="color:#38bdf8; font-weight:600;">(Live blend of Spot, Target, Momentum, RSI, EMA9, Vol & Book — updates every 2.5s)</span></h2>
+    <div class="h-grid" id="predGrid"></div>
+  </div>
+
+  <div class="row3">
+    <div class="card">
+      <h2>5. Indicators (Translated)</h2>
+      <div class="kv"><span>5-Min Move:</span><strong id="iM5">--</strong></div>
+      <div class="kv"><span>15-Min Move:</span><strong id="iM15">--</strong></div>
+      <div class="kv"><span>Speeding Up / Slowing:</span><strong id="iAcc">--</strong></div>
+      <div class="kv"><span>RSI (0-100):</span><strong id="iRsi">--</strong></div>
+      <div class="kv"><span>9-Min Average Price:</span><strong id="iEma">--</strong></div>
+      <div class="kv"><span>Volume vs Normal:</span><strong id="iVol">--</strong></div>
+    </div>
+
+    <div class="card" style="grid-column:span 2;">
+      <h2>6. Recent Snapshots & Alert Log</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Time</th><th>BTC Spot</th><th>vs Target</th><th>UP Ask</th><th>NO Ask</th><th>1m UP</th><th>Close UP</th><th>Pick</th></tr></thead>
+          <tbody id="hist"></tbody>
+        </table>
+      </div>
+      <div id="logs" class="sub" style="margin-top:10px; color:#fbbf24;">No stop-loss alerts triggered yet.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KALSHI_PUBLIC = "https://api.elections.kalshi.com/trade-api/v2";
+const COINBASE_CANDLES = "https://api.exchange.coinbase.com/products/BTC-USD/candles?granularity=60";
+
+const pickState = {
+  ticker: null,
+  confirmedPick: "SKIP",
+  candidatePick: "SKIP",
+  streak: 0,
+  manualLocked: false,
+  lockedPick: "SKIP",
+  lockedSub: ""
+};
+
+const alertState = {
+  armed: false,
+  peakBidCents: null,
+  triggeredTicker: null
+};
+
+const historyRows = [];
+const eventLogs = [];
+let beepedRound = null;
+
+function logEvent(msg) {
+  const ts = new Date().toLocaleTimeString([], { hour12: false });
+  eventLogs.unshift(`[${ts}] ${msg}`);
+  if (eventLogs.length > 8) eventLogs.pop();
+}
+
+function playBeep(freq = 920, ms = 220) {
+  if (!document.getElementById("chime").checked) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    o.frequency.value = freq;
+    o.connect(ctx.destination);
+    o.start();
+    setTimeout(() => o.stop(), ms);
+  } catch (e) {}
+}
+
+function toggleLock() {
+  if (!pickState.manualLocked) {
+    pickState.manualLocked = true;
+    pickState.lockedPick = pickState.confirmedPick;
+    pickState.lockedSub = `Locked at ${new Date().toLocaleTimeString()}`;
+  } else {
+    pickState.manualLocked = false;
+  }
+  tick();
+}
+
+function toggleArm() {
+  alertState.armed = !alertState.armed;
+  alertState.peakBidCents = null;
+  alertState.triggeredTicker = null;
+  if (alertState.armed) playBeep(740, 120);
+  logEvent(`Stop alert ${alertState.armed ? "ARMED" : "DISARMED"}`);
+  tick();
+}
+
+// Rational approximation of standard normal CDF
+function normCdf(z) {
+  const sign = z < 0 ? -1 : 1;
+  const x = Math.abs(z) / Math.sqrt(2);
+  const t = 1 / (1 + 0.3275911 * x);
+  const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
+  const erf = 1 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+  return 0.5 * (1 + sign * erf);
+}
+
+function buildSimpleMetaphor(spot, target, mom5m, accel5m, rsi14) {
+  const aboveTarget = target !== null ? spot > target : mom5m >= 0;
+  if (mom5m > 0.03 && accel5m > 0.01 && aboveTarget) return "The rocket is lit and climbing past the launchpad.";
+  if (mom5m > 0.01 && (accel5m < -0.01 || rsi14 > 70)) return "The car is cruising fast, but the foot is lifting off the gas.";
+  if (mom5m < -0.03 && accel5m < -0.01 && !aboveTarget) return "A snowball rolling downhill into heavy slush.";
+  if (mom5m < -0.01 && (accel5m > 0.01 || rsi14 < 30)) return "Sliding down the hill, but starting to dig in its heels.";
+  if (aboveTarget) return "Hovering just above the wire with nerves on a tightrope.";
+  return "Tug-of-war in the mud with nobody keeping real ground.";
+}
+
+function buildAnalyticalPredictions(p) {
+  const sigma1m = Math.max(p.vol1m / 100, 0.0003);
+  const volWeight = Math.min(Math.max(p.volRatio, 0.5), 2.0);
+  const momBias = Math.tanh((p.mom5m * 8.0) + (p.mom15m * 4.0) + (p.accel5m * 3.0));
+  const trendBias = p.spot > p.ema9 ? 0.35 : -0.35;
+  const rsiBias = (p.rsi14 - 50.0) / 50.0;
+  const rawBias = Math.max(Math.min((0.45 * momBias + 0.35 * trendBias + 0.20 * rsiBias) * (0.75 + 0.25 * volWeight), 1.0), -1.0);
+
+  const horizons = [
+    ["1-Min Horizon", 60],
+    ["5-Min Horizon", 300],
+    ["Round Close", Math.max(p.secsLeft, 1)]
+  ];
+
+  return horizons.map(([label, hSec]) => {
+    const mins = hSec / 60.0;
+    const effMins = Math.min(mins, 12.0);
+    const driftPerMin = ((p.mom5m / 100.0) / 5.0) * 0.6 + (rawBias * sigma1m * 0.35);
+    const predSpot = p.spot * Math.exp(driftPerMin * effMins);
+    const predDiff = p.target !== null ? predSpot - p.target : null;
+
+    let zSpot = 0;
+    let spotOdds = p.impYesPct;
+    if (p.target && p.target > 0) {
+      const sigmaH = sigma1m * Math.sqrt(Math.max(mins, 0.05));
+      zSpot = Math.log(predSpot / p.target) / sigmaH;
+      spotOdds = normCdf(zSpot) * 100.0;
+    }
+
+    const indShift = rawBias * 14.0 * Math.min(1.0, Math.sqrt(effMins / 3.0));
+    const indOdds = Math.min(Math.max(p.impYesPct + indShift, 2.0), 98.0);
+
+    let upOdds = Math.round((0.40 * p.impYesPct + 0.35 * spotOdds + 0.25 * indOdds) * 10) / 10;
+    upOdds = Math.min(Math.max(upOdds, 1.0), 99.0);
+    const noOdds = Math.round((100.0 - upOdds) * 10) / 10;
+    const edgeVsMkt = Math.round((upOdds - p.impYesPct) * 10) / 10;
+    const conf = Math.min(92, Math.max(38, Math.floor(45 + Math.abs(rawBias) * 28 + Math.min(Math.abs(zSpot) * 10, 19))));
+
+    let lean = "TOSS-UP", tone = "yellow";
+    if (upOdds >= 56) { lean = "LEANS UP"; tone = "green"; }
+    else if (upOdds <= 44) { lean = "LEANS DOWN"; tone = "red"; }
+
+    return {
+      horizon: label,
+      predSpot: Math.round(predSpot * 100) / 100,
+      predDiff: predDiff !== null ? Math.round(predDiff * 100) / 100 : null,
+      upOdds, noOdds, edgeVsMkt, confidence: conf, lean, tone
+    };
+  });
+}
+
+function resolveSmoothedPick(ticker, spot, target, mom5m, endPred) {
+  if (pickState.ticker !== ticker) {
+    pickState.ticker = ticker;
+    pickState.confirmedPick = "SKIP";
+    pickState.candidatePick = "SKIP";
+    pickState.streak = 0;
+    pickState.manualLocked = false;
+  }
+
+  const cur = pickState.confirmedPick;
+  const aboveOk = target === null || spot > target;
+  const belowOk = target === null || spot < target;
+
+  let rawSignal = "SKIP";
+  if (cur === "UP") {
+    rawSignal = (endPred.upOdds >= 54.0 && aboveOk) ? "UP" : "SKIP";
+  } else if (cur === "DOWN") {
+    rawSignal = (endPred.noOdds >= 54.0 && belowOk) ? "DOWN" : "SKIP";
+  } else {
+    if (endPred.upOdds >= 60.0 && mom5m >= -0.01 && aboveOk) rawSignal = "UP";
+    else if (endPred.noOdds >= 60.0 && mom5m <= 0.01 && belowOk) rawSignal = "DOWN";
+  }
+
+  let pendingNote = "";
+  if (rawSignal === cur) {
+    pickState.candidatePick = cur;
+    pickState.streak = 0;
+  } else {
+    if (rawSignal === pickState.candidatePick) pickState.streak += 1;
+    else { pickState.candidatePick = rawSignal; pickState.streak = 1; }
+
+    if (pickState.streak >= 3) {
+      pickState.confirmedPick = rawSignal;
+      pickState.streak = 0;
+    } else {
+      pendingNote = ` • Verifying ${rawSignal} (${pickState.streak}/3)`;
+    }
+  }
+
+  const activePick = pickState.manualLocked ? pickState.lockedPick : pickState.confirmedPick;
+  if (activePick === "UP") {
+    return {
+      pick: "UP",
+      color: "green",
+      sub: pickState.manualLocked ? pickState.lockedSub : `${endPred.upOdds}% close odds • ${endPred.confidence}% conf${pendingNote}`
+    };
+  }
+  if (activePick === "DOWN") {
+    return {
+      pick: "DOWN",
+      color: "red",
+      sub: pickState.manualLocked ? pickState.lockedSub : `${endPred.noOdds}% NO odds • ${endPred.confidence}% conf${pendingNote}`
+    };
+  }
+  return {
+    pick: "SKIP",
+    color: "yellow",
+    sub: pickState.manualLocked ? pickState.lockedSub : `No clean edge (<60%)${pendingNote}`
+  };
+}
+
+async function tick() {
+  try {
+    const [mRes, cRes] = await Promise.all([
+      fetch(`${KALSHI_PUBLIC}/markets?series_ticker=KXBTC15M&status=open&limit=10`),
+      fetch(COINBASE_CANDLES)
+    ]);
+    const mJson = await mRes.json();
+    const cJson = await cRes.json();
+
+    const nowSec = Math.floor(Date.now() / 1000);
+    const markets = (mJson.markets || []).sort((a, b) => (a.close_time || "").localeCompare(b.close_time || ""));
+    const market = markets.find(m => Math.floor(new Date(m.close_time).getTime() / 1000) > nowSec) || markets[0];
+    if (!market) return;
+
+    const ticker = market.ticker;
+    const target = market.floor_strike !== undefined && market.floor_strike !== null ? Number(market.floor_strike) : null;
+    const secsLeft = Math.max(0, Math.floor(new Date(market.close_time).getTime() / 1000) - nowSec);
+
+    const obRes = await fetch(`${KALSHI_PUBLIC}/markets/${ticker}/orderbook`);
+    const obJson = await obRes.json();
+    const fp = obJson.orderbook_fp || {};
+    const yesBids = fp.yes_dollars || [];
+    const noBids = fp.no_dollars || [];
+
+    const yesBid = yesBids.length ? Number(yesBids[yesBids.length - 1][0]) : null;
+    const noBid = noBids.length ? Number(noBids[noBids.length - 1][0]) : null;
+    const yesAsk = noBid !== null ? Math.round((1 - noBid) * 100) / 100 : null;
+    const noAsk = yesBid !== null ? Math.round((1 - yesBid) * 100) / 100 : null;
+
+    let impYes = 0.5;
+    if (yesBid !== null && yesAsk !== null) impYes = (yesBid + yesAsk) / 2;
+    else if (yesBid !== null) impYes = yesBid;
+    const impYesPct = Math.round(impYes * 1000) / 10;
+    const impNoPct = Math.round((100 - impYesPct) * 10) / 10;
+
+    const candles = cJson.sort((a, b) => a[0] - b[0]).slice(-40);
+    const closes = candles.map(c => Number(c[4]));
+    const vols = candles.map(c => Number(c[5]));
+    const spot = closes[closes.length - 1];
+
+    const mom5m = ((spot - closes[closes.length - 6]) / closes[closes.length - 6]) * 100;
+    const prevMom5m = ((closes[closes.length - 6] - closes[closes.length - 11]) / closes[closes.length - 11]) * 100;
+    const accel5m = mom5m - prevMom5m;
+    const mom15m = ((spot - closes[closes.length - 16]) / closes[closes.length - 16]) * 100;
+
+    const k = 2 / 10;
+    let ema9 = closes[0];
+    for (let i = 1; i < closes.length; i++) ema9 = closes[i] * k + ema9 * (1 - k);
+
+    const deltas = [];
+    for (let i = 1; i < closes.length; i++) deltas.push(closes[i] - closes[i - 1]);
+    const rec = deltas.slice(-14);
+    const gains = rec.filter(d => d > 0).reduce((a, b) => a + b, 0) / 14;
+    const losses = rec.filter(d => d < 0).reduce((a, b) => a + (-b), 0) / 14;
+    const rs = losses > 0 ? gains / losses : 100;
+    const rsi14 = 100 - (100 / (1 + rs));
+
+    const rets = [];
+    for (let i = closes.length - 29; i < closes.length; i++) rets.push((closes[i] - closes[i - 1]) / closes[i - 1]);
+    const meanR = rets.reduce((a, b) => a + b, 0) / rets.length;
+    const vol1m = Math.sqrt(rets.reduce((a, r) => a + (r - meanR) ** 2, 0) / rets.length) * 100;
+    const vRecent = vols.slice(-5).reduce((a, b) => a + b, 0) / 5;
+    const vBase = vols.slice(-30, -5).reduce((a, b) => a + b, 0) / 25;
+    const volRatio = vBase > 0 ? vRecent / vBase : 1;
+
+    let score = 0;
+    if (target !== null) score += spot > target ? 1 : -1;
+    score += mom5m > 0.02 ? 1 : (mom5m < -0.02 ? -1 : 0);
+    score += spot > ema9 ? 1 : -1;
+    score += rsi14 > 55 ? 1 : (rsi14 < 45 ? -1 : 0);
+
+    let vibeTitle = "COIN FLIP / CHOPPY", vibePlain = "Mixed signals — easy to get chopped up.", vibeColor = "yellow";
+    if (score >= 2) { vibeTitle = "BULLS IN CHARGE"; vibePlain = "BTC is pushing up and mostly beating the target."; vibeColor = "green"; }
+    else if (score <= -2) { vibeTitle = "BEARS IN CHARGE"; vibePlain = "BTC is slipping and losing ground against target."; vibeColor = "red"; }
+
+    const preds = buildAnalyticalPredictions({
+      spot, target, secsLeft, mom5m, mom15m, accel5m, rsi14, ema9, vol1m, volRatio, impYesPct
+    });
+    const endPred = preds[2];
+    const circle = resolveSmoothedPick(ticker, spot, target, mom5m, endPred);
+
+    let endCall = "MODEL CALL: END TOSS-UP", endColor = "yellow";
+    if (endPred.upOdds >= 55) { endCall = "MODEL CALL: END UP"; endColor = "green"; }
+    else if (endPred.noOdds >= 55) { endCall = "MODEL CALL: END DOWN"; endColor = "red"; }
+
+    // Render UI
+    document.getElementById("topSub").textContent = `Round ${ticker} • Updated: ${new Date().toLocaleTimeString()}`;
+    const fc = document.getElementById("topForecast");
+    fc.className = "top-forecast " + (endColor === "green" ? "fc-green" : endColor === "red" ? "fc-red" : "fc-yellow");
+    document.getElementById("endCall").textContent = endCall;
+    document.getElementById("endDetail").textContent = `Est. finish ~$${endPred.predSpot.toLocaleString()} (${endPred.upOdds}% UP / ${endPred.noOdds}% NO) — anything can still happen before close.`;
+
+    const circ = document.getElementById("pickCircle");
+    circ.className = "pick-circle " + (circle.color === "green" ? "circle-green" : circle.color === "red" ? "circle-red" : "circle-yellow");
+    document.getElementById("pickWord").textContent = circle.pick;
+    document.getElementById("pickSub").textContent = circle.sub;
+
+    const lBtn = document.getElementById("lockBtn");
+    lBtn.textContent = pickState.manualLocked ? "PICK LOCKED (Click to Unlock)" : "LOCK PICK";
+    lBtn.className = pickState.manualLocked ? "btn-locked" : "btn-lock";
+
+    document.getElementById("metaphorBar").textContent = `"${buildSimpleMetaphor(spot, target, mom5m, accel5m, rsi14)}"`;
+
+    const mins = Math.floor(secsLeft / 60);
+    const secs = String(secsLeft % 60).padStart(2, "0");
+    document.getElementById("clockBox").textContent = `Time Left: ${mins}:${secs}`;
+    if (secsLeft <= 20 && secsLeft > 16 && beepedRound !== ticker) { beepedRound = ticker; playBeep(920, 220); }
+
+    const vc = document.getElementById("vibeCard");
+    vc.className = "card " + (vibeColor === "green" ? "green-box" : vibeColor === "red" ? "red-box" : "yellow-box");
+    document.getElementById("vibeTitle").textContent = vibeTitle;
+    document.getElementById("vibePlain").textContent = vibePlain;
+    document.getElementById("target").textContent = target !== null ? `$${target.toLocaleString()}` : "N/A";
+    document.getElementById("spot").textContent = `$${spot.toLocaleString()}`;
+    const diff = target !== null ? spot - target : null;
+    document.getElementById("diff").textContent = diff !== null ? `${diff >= 0 ? "+" : ""}$${diff.toFixed(2)}` : "--";
+
+    const fmtC = v => v !== null ? `${Math.round(v * 100)}c` : "--";
+    document.getElementById("yesPair").textContent = `Buy ${fmtC(yesAsk)} / Sell ${fmtC(yesBid)}`;
+    document.getElementById("noPair").textContent = `Buy ${fmtC(noAsk)} / Sell ${fmtC(noBid)}`;
+    document.getElementById("crowdOdds").textContent = `${impYesPct}% UP / ${impNoPct}% DOWN`;
+
+    // Stop Alert Check
+    const side = document.getElementById("sideSel").value;
+    const activeBid = side === "YES" ? yesBid : noBid;
+    const mode = document.getElementById("mode").value;
+    const val = Number(document.getElementById("val").value);
+    const entry = Number(document.getElementById("entry").value);
+
+    if (activeBid !== null) {
+      const bidC = Math.round(activeBid * 1000) / 10;
+      if (alertState.peakBidCents === null || bidC > alertState.peakBidCents) alertState.peakBidCents = bidC;
+      let trig = val;
+      if (mode === "pct_drawdown") trig = Math.round(entry * (1 - val / 100) * 10) / 10;
+      else if (mode === "trailing_cents") trig = Math.round((alertState.peakBidCents - val) * 10) / 10;
+
+      document.getElementById("stopStatus").textContent = `${bidC}c bid / ${trig}c trigger`;
+      if (alertState.armed && bidC <= trig && alertState.triggeredTicker !== ticker) {
+        alertState.triggeredTicker = ticker;
+        alertState.armed = false;
+        playBeep(520, 600);
+        logEvent(`STOP ALERT HIT! ${side} bid ${bidC}c <= ${trig}c`);
+      }
+    } else {
+      document.getElementById("stopStatus").textContent = "--";
+    }
+
+    const aBtn = document.getElementById("armBtn");
+    aBtn.textContent = alertState.armed ? "ALERT ARMED (Click Off)" : "ARM STOP ALERT";
+    aBtn.className = alertState.armed ? "btn-panic" : "btn-arm";
+
+    document.getElementById("predGrid").innerHTML = preds.map(p => {
+      const bClass = p.tone === "green" ? "b-green" : p.tone === "red" ? "b-red" : "b-yellow";
+      const dStr = p.predDiff !== null ? `${p.predDiff >= 0 ? "+" : ""}$${p.predDiff.toFixed(2)}` : "--";
+      const edgeStr = `${p.edgeVsMkt >= 0 ? "+" : ""}${p.edgeVsMkt}% vs crowd`;
+      return `<div class="h-box">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <strong>${p.horizon}</strong>
+          <span class="badge ${bClass}">${p.lean}</span>
+        </div>
+        <div style="font-size:22px; font-weight:800; margin-top:8px;">
+          <span class="c-green">${p.upOdds}% UP</span> <span style="font-size:13px; color:#94a3b8;">/ <span class="c-red">${p.noOdds}% NO</span></span>
+        </div>
+        <div class="sub">Est. BTC: <strong>$${p.predSpot.toLocaleString()}</strong> (${dStr})</div>
+        <div class="sub" style="color:#94a3b8;">${edgeStr} • Model conf: ${p.confidence}%</div>
+      </div>`;
+    }).join("");
+
+    document.getElementById("iM5").textContent = `${mom5m >= 0 ? "+" : ""}${mom5m.toFixed(3)}%`;
+    document.getElementById("iM15").textContent = `${mom15m >= 0 ? "+" : ""}${mom15m.toFixed(3)}%`;
+    const accTag = accel5m > 0.02 ? "Accelerating" : (accel5m < -0.02 ? "Slowing/Fading" : "Steady");
+    document.getElementById("iAcc").textContent = `${accTag} (${accel5m >= 0 ? "+" : ""}${accel5m.toFixed(3)})`;
+    const rsiTag = rsi14 > 70 ? "Hot (Overbought)" : (rsi14 < 30 ? "Cold (Oversold)" : "Middle");
+    document.getElementById("iRsi").textContent = `${rsi14.toFixed(1)} (${rsiTag})`;
+    document.getElementById("iEma").textContent = `$${ema9.toFixed(2)}`;
+    document.getElementById("iVol").textContent = `${volRatio.toFixed(2)}x (${vol1m.toFixed(3)}% 1m vol)`;
+
+    const tStr = new Date().toLocaleTimeString([], { hour12: false });
+    if (!historyRows.length || historyRows[0].time !== tStr) {
+      historyRows.unshift({
+        time: tStr,
+        spot: spot.toFixed(2),
+        diff: diff !== null ? diff.toFixed(2) : "--",
+        upAsk: yesAsk !== null ? Math.round(yesAsk * 100) : "--",
+        noAsk: noAsk !== null ? Math.round(noAsk * 100) : "--",
+        pred1m: preds[0].upOdds,
+        predEnd: endPred.upOdds,
+        pick: circle.pick
+      });
+      if (historyRows.length > 10) historyRows.pop();
+    }
+
+    document.getElementById("hist").innerHTML = historyRows.map(h =>
+      `<tr><td>${h.time}</td><td>$${h.spot}</td><td>${h.diff}</td><td>${h.upAsk}c</td><td>${h.noAsk}c</td><td>${h.pred1m}%</td><td>${h.predEnd}%</td><td><strong>${h.pick}</strong></td></tr>`
+    ).join("");
+
+    document.getElementById("logs").innerHTML = eventLogs.length ? eventLogs.join("<br>") : "No stop-loss alerts triggered yet.";
+  } catch (err) {
+    document.getElementById("topSub").textContent = `Feed hiccup (${err.message}) — retrying...`;
+  }
+}
+
+setInterval(tick, 2500);
+tick();
+</script>
+</body>
+</html>
